@@ -8,8 +8,11 @@ import subprocess
 import datetime
 import http.client
 from ftplib import FTP
-import signal            
+import signal
+import configparser
 
+config=configparser.ConfigParser()
+config.read("config.ini")
 
 #################新包检测################
 
@@ -25,11 +28,14 @@ signal.signal(signal.SIGTERM, exit)
 
 # ip = "10.10.43.155"
 # dir_base = "/test/"
-ip = "10.10.75.224"
+# ip = "10.10.75.224"
+ip = config.get("setting","host")
 # ip = "192.168.1.108"
-dir_base = "/pub/xl9/InstallPack/10.1.0.x/"
+# dir_base = "/pub/xl9/InstallPack/10.1.0.x/"
+# dir_base = config.get("setting","check_dir")
 # log_dir = 'D:\\Git\\xl9checklist\\'
-log_dir = 'D:\\AutoTest\\thunderx\\'
+# log_dir = 'D:\\AutoTest\\thunderx\\'
+log_dir = config.get("setting","log_dir")
 
 ftp.connect(ip)
 ftp.login()
@@ -84,22 +90,26 @@ def checknewfile(dir,files):
                     oldcwd = os.getcwd()
                     print(oldcwd) 
                     since = ""
-                    try:
-                        with open("sincetime.txt") as f:
-                            since = f.read()
-                    except Exception as e:
-                        print(e)
+                    # try:
+                        # with open("sincetime.txt") as f:
+                            # since = f.read()
+                    # except Exception as e:
+                        # print(e)
+                    since = config.get("setting","sincetime")
                     if since == "" or since[0] != "\"":
                         since = "\""+since+"\""
                     print(since)
                     until = datetime.datetime.now() - datetime.timedelta(minutes=10)
                     until = "\""+str(until)+"\""
                     print(until)
-                    with open("sincetime.txt","w") as f:
-                        f.write(until)    
+                    # with open("sincetime.txt","w") as f:
+                        # f.write(until)    
+                    with open('config.ini', 'w') as f:
+                        config.set("setting","sincetime",until)
+                        config.write(f)
                         
                     os.chdir(log_dir) 
-                    # print(os.getcwd())
+                    print(os.getcwd())
                     cmd = "git pull"
                     print(cmd)
                     os.system(cmd)
@@ -129,8 +139,8 @@ def checknewfile(dir,files):
             content = "新包："+"\n".join(url)
         pkgreqdata={"msgtype": "text", "text": {"content": content}}
         pkgdata=json.dumps(pkgreqdata)
-        # conn.request('POST', '/robot/send?access_token=f2542b18cf2aba67775a209fa9341337a1a2fc9388ceb45f439eea9f87856c9e', pkgdata, reqheaders)
-        conn.request('POST', '/robot/send?access_token=5690f1251e1c4fb8582de4f7321805632dc822bfdd6255224e71df753fab2f9a', pkgdata, reqheaders)
+        conn.request('POST', '/robot/send?access_token='+config.get("setting","access_token"), pkgdata, reqheaders)
+        # conn.request('POST', '/robot/send?access_token=5690f1251e1c4fb8582de4f7321805632dc822bfdd6255224e71df753fab2f9a', pkgdata, reqheaders)
         res=conn.getresponse()
         # print(res.status)
         # print(res.msg)
@@ -146,9 +156,11 @@ for i in range(0,144000): # 100 days
         print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 #############新包检测################
-    if os.path.exists("check_dir.txt"):
-        with open("check_dir.txt") as f:
-            dir_base = f.read()
+    # if os.path.exists("check_dir.txt"):
+        # with open("check_dir.txt") as f:
+            # dir_base = f.read()
+    config.read("config.ini")
+    dir_base = config.get("setting","check_dir")
     today = time.strftime('%y%m%d',time.localtime())
     if today != today0: #过了一天，要重新获取
         today0 = today
