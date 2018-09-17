@@ -29,7 +29,7 @@ ip = "10.10.75.224"
 # ip = "192.168.1.108"
 dir_base = "/pub/xl9/InstallPack/10.1.0.x/"
 # log_dir = 'D:\\Git\\xl9checklist\\'
-log_dir = 'D:\\Git\\gitlab_test\\'
+log_dir = 'D:\\AutoTest\\thunderx\\'
 
 ftp.connect(ip)
 ftp.login()
@@ -103,7 +103,7 @@ def checknewfile(dir,files):
                     cmd = "git pull"
                     print(cmd)
                     os.system(cmd)
-                    cmd = "git shortlog --since="+since+" --until="+until
+                    cmd = "git shortlog --no-merges --since="+since+" --until="+until
                     print(cmd)
                     sub=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
                     sub.wait()
@@ -129,7 +129,8 @@ def checknewfile(dir,files):
             content = "新包："+"\n".join(url)
         pkgreqdata={"msgtype": "text", "text": {"content": content}}
         pkgdata=json.dumps(pkgreqdata)
-        conn.request('POST', '/robot/send?access_token=f2542b18cf2aba67775a209fa9341337a1a2fc9388ceb45f439eea9f87856c9e', pkgdata, reqheaders)
+        # conn.request('POST', '/robot/send?access_token=f2542b18cf2aba67775a209fa9341337a1a2fc9388ceb45f439eea9f87856c9e', pkgdata, reqheaders)
+        conn.request('POST', '/robot/send?access_token=5690f1251e1c4fb8582de4f7321805632dc822bfdd6255224e71df753fab2f9a', pkgdata, reqheaders)
         res=conn.getresponse()
         # print(res.status)
         # print(res.msg)
